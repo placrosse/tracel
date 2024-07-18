@@ -1,0 +1,7 @@
+[package]
+name = "crateA"
+edition.workspace = true
+version.workspace = true
+readme.workspace = true
+
+[dependencies]

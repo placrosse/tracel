@@ -7,6 +7,8 @@ version.workspace = true
 [dependencies]
 burn = { workspace = true, features = ["vision", "train"] }
 tracel = { path = "../../crates/tracel", features = ["heat-sdk"] }
+guide = { path = "../guide" }
+crateA = { path = "../crateA" }
 
 [dev-dependencies]
 tracel = { path = "../../crates/tracel", features = ["cli"] }

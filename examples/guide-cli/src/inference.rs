@@ -1,4 +1,4 @@
-use crate::{data::MnistBatcher, model::Model};
+use guide::{data::MnistBatcher, model::Model};
 use burn::{
     data::{
         dataloader::batcher::Batcher,

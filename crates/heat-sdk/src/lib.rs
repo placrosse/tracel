@@ -21,6 +21,8 @@ pub mod sdk_cli {
 
         #[cfg(feature = "cli")]
         pub use heat_sdk_cli_macros::heat_cli_main;
+
+        pub use heat_sdk_cli_macros::heat_import_extern_crate;
     }
     
 }

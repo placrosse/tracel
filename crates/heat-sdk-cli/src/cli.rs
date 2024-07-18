@@ -309,6 +309,16 @@ pub fn cli_main() {
     let project_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
 
 
+    let extern_crates = crate::registry::get_external_crates();
+    extern_crates.iter().for_each(|crate_info: &crate::registry::ExternCrate| {
+        print_info!("Adding external crate: {} from path: {}", crate_info.imported_name, crate_info.importer_name);
+    });
+
+    let dep_tree = crate::registry::generate_dependency_tree("guide_cli");
+    for path in dep_tree {
+        print_info!("Dependency path: {}", path.join(" -> "));
+    }
+
     // print all functions that are registered as training functions
     let flags = crate::registry::get_flags();
     let training_functions = flags

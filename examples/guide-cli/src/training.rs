@@ -1,7 +1,3 @@
-use crate::{
-    data::{MnistBatch, MnistBatcher},
-    model::{Model, ModelConfig},
-};
 use burn::{
     data::dataset::transform::SamplerDataset,
     record::HalfPrecisionSettings,
@@ -9,61 +5,18 @@ use burn::{
 };
 use burn::{
     data::{dataloader::DataLoaderBuilder, dataset::vision::MnistDataset},
-    nn::loss::CrossEntropyLossConfig,
-    optim::AdamConfig,
-    prelude::*,
     tensor::backend::AutodiffBackend,
     train::{
         metric::{AccuracyMetric, LossMetric},
-        ClassificationOutput, LearnerBuilder, TrainOutput, TrainStep, ValidStep,
+        LearnerBuilder,
     },
 };
+use burn::config::Config;
+
+use guide::data::MnistBatcher;
+use guide::model::Model;
+use guide::training::TrainingConfig;
 use tracel::heat::{client::HeatClient, command::DeviceVec, sdk_cli::macros::heat};
-
-impl<B: Backend> Model<B> {
-    pub fn forward_classification(
-        &self,
-        images: Tensor<B, 3>,
-        targets: Tensor<B, 1, Int>,
-    ) -> ClassificationOutput<B> {
-        let output = self.forward(images);
-        let loss = CrossEntropyLossConfig::new()
-            .init(&output.device())
-            .forward(output.clone(), targets.clone());
-
-        ClassificationOutput::new(loss, output, targets)
-    }
-}
-
-impl<B: AutodiffBackend> TrainStep<MnistBatch<B>, ClassificationOutput<B>> for Model<B> {
-    fn step(&self, batch: MnistBatch<B>) -> TrainOutput<ClassificationOutput<B>> {
-        let item = self.forward_classification(batch.images, batch.targets);
-
-        TrainOutput::new(self, item.loss.backward(), item)
-    }
-}
-
-impl<B: Backend> ValidStep<MnistBatch<B>, ClassificationOutput<B>> for Model<B> {
-    fn step(&self, batch: MnistBatch<B>) -> ClassificationOutput<B> {
-        self.forward_classification(batch.images, batch.targets)
-    }
-}
-
-#[derive(Config)]
-pub struct TrainingConfig {
-    pub model: ModelConfig,
-    pub optimizer: AdamConfig,
-    #[config(default = 10)]
-    pub num_epochs: usize,
-    #[config(default = 64)]
-    pub batch_size: usize,
-    #[config(default = 4)]
-    pub num_workers: usize,
-    #[config(default = 42)]
-    pub seed: u64,
-    #[config(default = 1.0e-4)]
-    pub learning_rate: f64,
-}
 
 fn create_artifact_dir(artifact_dir: &str) {
     // Remove existing artifacts before to get an accurate learner summary

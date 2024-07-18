@@ -12,3 +12,5 @@ log = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true, features = ["std", "derive"] }
 tracel = { path = "../../crates/tracel", features = ["heat-sdk"] }
+
+crateA = { path = "../crateA" }

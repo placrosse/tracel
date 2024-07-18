@@ -17,7 +17,7 @@ use burn::{
         ClassificationOutput, LearnerBuilder, TrainOutput, TrainStep, ValidStep,
     },
 };
-use tracel::heat::client::HeatClient;
+use tracel::heat::{client::HeatClient, command::DeviceVec, sdk_cli::macros::heat};
 
 impl<B: Backend> Model<B> {
     pub fn forward_classification(
@@ -139,4 +139,39 @@ pub fn train<B: AutodiffBackend>(
     client
         .end_experiment_with_model::<B, HalfPrecisionSettings>(model_trained)
         .expect("Experiment should end successfully");
+}
+
+#[heat(training)]
+pub fn _training<B: AutodiffBackend>(
+    mut client: HeatClient,
+    config: TrainingConfig,
+    DeviceVec(devices): DeviceVec<B::Device>,
+) -> Result<Model<B>, ()> {
+    train::<B>(&mut client, "/tmp/guide", config, devices[0].clone());
+    Err(())
+}
+
+#[heat(training)]
+pub fn _training2<B: AutodiffBackend>(
+    config: TrainingConfig,
+    DeviceVec(devices): DeviceVec<B::Device>,
+    mut client: HeatClient,
+) -> Result<Model<B>, ()> {
+    train::<B>(&mut client, "/tmp/guide2", config, devices[0].clone());
+    Err(())
+}
+
+
+#[heat(training)]
+pub fn _custom_training<B: AutodiffBackend>(
+    DeviceVec(devices): DeviceVec<B::Device>,
+) -> Result<Model<B>, ()> {
+    println!("Custom training: {:?}", devices);
+    Err(())
+}
+
+#[heat(training)]
+pub fn _nothingburger<B: AutodiffBackend>() -> Result<Model<B>, ()> {
+    println!("Nothingburger");
+    Err(())
 }

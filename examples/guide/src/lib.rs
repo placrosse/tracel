@@ -10,3 +10,5 @@ pub mod model;
 pub mod training;
 
 pub use burn;
+
+tracel::heat::sdk_cli::macros::heat_import_extern_crate!(crateA);

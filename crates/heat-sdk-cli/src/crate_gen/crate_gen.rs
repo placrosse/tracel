@@ -306,6 +306,22 @@ fn generate_main_rs(main_backend: &str) -> String {
         }
     };
 
+    let dependency_tree = crate::registry::generate_dependency_tree("guide_cli");
+
+    fn string_vec_to_path_vec(string_vec: Vec<String>) -> syn::Path {
+        let string_path = string_vec.join("::");
+        let path = syn::parse_str::<syn::Path>(&string_path).expect("Failed to parse path.");
+
+        path
+    }
+
+    let extern_crate_imports = dependency_tree.iter().map(|path_to_dep| {
+        let path = string_vec_to_path_vec(path_to_dep.clone());
+        quote! {
+            use #path;
+        }
+    });
+
     let backend = match crate::crate_gen::backend::get_backend_type(main_backend) {
         Ok(backend) => backend,
         Err(err) => {
@@ -325,6 +341,8 @@ fn generate_main_rs(main_backend: &str) -> String {
 
 
     let bin_content: proc_macro2::TokenStream = quote! {
+        #(#extern_crate_imports)*
+
         #backend_types
         #clap_cli
 

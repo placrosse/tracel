@@ -186,36 +186,44 @@ pub fn heat_cli_main(args: TokenStream, item: TokenStream) -> TokenStream {
     .into()
 }
 
-///
+
+fn generate_crate_register_stream(crate_name: &syn::Ident) -> proc_macro2::TokenStream {
+    quote! {
+        tracel::heat::sdk_cli::register_flag!(
+            tracel::heat::sdk_cli::registry::ExternCrate,
+            tracel::heat::sdk_cli::registry::ExternCrate::new(&stringify!(#crate_name), module_path!())
+        );
+    }
+}
+
+/// This macro is used to import the extern crate in the generated code to ensure
+/// foreign `heat` annotated functions are able to be called.
+/// 
 /// Usage example:
 /// ```rust
-/// #[heat_import_extern_crate(crate_name)]
+/// heat_import_extern_crate!(crate_name);
+/// ```
 /// 
-#[proc_macro_attribute]
-pub fn heat_import_extern_crate(_args: TokenStream, item: TokenStream) -> TokenStream {
-    let item = parse_macro_input!(item as ItemFn);
+#[proc_macro]
+pub fn heat_import_extern_crate(item: TokenStream) -> TokenStream {
+    let item = parse_macro_input!(item as Path);
 
-    let item_sig = &item.sig;
-    let item_block = &item.block;
+    let crate_name = item.get_ident().expect("Expected an identifier for the crate name.");
 
-    // cause an error if the function has a body
-    if !item_block.stmts.is_empty() {
-        return Error::new(
-            item_block.span(),
-            "The import_extern_crate function should not have a body",
-        )
-        .to_compile_error()
-        .into();
-    }
-
-    let item = quote! {
-        #item_sig {
-            tracel::heat::sdk_cli::cli::import_extern_crate();
-        }
+    let extern_crate = quote! {
+        pub extern crate #crate_name;
     };
+    let crate_register = generate_crate_register_stream(crate_name);
+    
+    if cfg!(feature = "build-cli") {
+        quote! {
+            #extern_crate
 
-    quote! {
-        #item
-    }
-    .into()
+            #crate_register
+        }
+    } else {
+        quote! {
+            #extern_crate
+        }
+    }.into()
 }
