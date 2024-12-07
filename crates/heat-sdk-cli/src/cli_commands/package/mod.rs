@@ -29,9 +29,7 @@ pub struct PackageArgs {
 }
 
 pub(crate) fn handle_command(args: PackageArgs, context: HeatCliContext) -> anyhow::Result<()> {
-    let last_commit_hash = GitRepo::discover()?
-        .if_not_dirty()?
-        .get_last_commit_hash()?;
+    let last_commit_hash = GitRepo::new()?.if_not_dirty()?.get_last_commit_hash()?;
 
     let heat_client = create_heat_client(
         &args.key,
