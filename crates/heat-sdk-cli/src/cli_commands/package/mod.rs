@@ -1,7 +1,7 @@
 use crate::context::HeatCliContext;
 use crate::print_success;
 use crate::registry::Flag;
-use crate::util::git::GitRepo;
+use crate::util::git::{DefaultGitRepo, GitRepo};
 use clap::Parser;
 use heat_sdk::client::{HeatClient, HeatClientConfig, HeatCredentials};
 use heat_sdk::schemas::{HeatCodeMetadata, ProjectPath, RegisteredHeatFunction};
@@ -29,7 +29,9 @@ pub struct PackageArgs {
 }
 
 pub(crate) fn handle_command(args: PackageArgs, context: HeatCliContext) -> anyhow::Result<()> {
-    let last_commit_hash = GitRepo::new()?.if_not_dirty()?.get_last_commit_hash()?;
+    let last_commit_hash = DefaultGitRepo::new()?
+        .if_not_dirty()?
+        .get_last_commit_hash()?;
 
     let heat_client = create_heat_client(
         &args.key,
